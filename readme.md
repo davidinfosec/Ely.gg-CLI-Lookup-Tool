@@ -1,7 +1,7 @@
 # Ely.gg CLI Lookup
 
 ## Overview
-The Unofficial Ely.gg CLI Lookup is a Python tool designed to retrieve RuneScape 3 (RS3) community submitted item prices from the Ely.gg website. It utilizes web scraping techniques to extract relevant information and provide users with up-to-date pricing data. 
+The Unofficial Ely.gg CLI Lookup is a Python tool designed to retrieve RuneScape 3 (RS3) item prices from the Ely gaming website. It utilizes web scraping techniques to extract relevant information and provide users with up-to-date pricing data.
 
 ## Features
 - Retrieves RS3 item prices based on user input.
@@ -27,6 +27,7 @@ The RS3 Item Price Scraper is a command-line tool. It accepts the following argu
 
 - `item`: The RS3 item to search for.
 - `-b`, `--brief`: Display only the latest 10 prices (optional).
+- `-c`, `--chart`: Generate a .png file displaying a small chart to accompany your search.
 
 To execute the tool, run the following command in your terminal:
 
