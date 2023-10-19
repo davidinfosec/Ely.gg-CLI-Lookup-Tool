@@ -44,7 +44,12 @@ python ely.py golden+partyhat
 ```
 This will retrieve the prices for a Golden Partyhat from the Ely website.
 
-!(https://i.imgur.com/UFLxfUY.png)[]
+![Example1 - Red Partyhat query](https://i.imgur.com/UFLxfUY.png)
+![Example2 - Red Partyhat query, with historic chart image generated](https://i.imgur.com/PbtMJWg.png)
+
+
+
+
 
 ### Support and Contributions
 
