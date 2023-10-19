@@ -30,21 +30,41 @@ def scrape_wallet_data(search_item):
                 price = price_element.text.strip()
                 name = name_element.text.strip()
 
-                wallet_data.append([date, day, price, name])
+                trade_type_element = price_element.find_previous('h4', class_='cicsNy kBzJqa czMglK')
+
+                if trade_type_element:
+                    trade_type = trade_type_element.text.strip()
+                else:
+                    trade_type = "Unknown"
+
+                wallet_data.append([date, day, price, name, trade_type])
 
         return wallet_data
 
     else:
         return None
 
+
+
+
+
 def format_data(data, search_item, brief):
     formatted_data = []
     if brief:
         data = data[:10]  # Display only the latest 10 prices
     for item in data:
-        formatted_item = f"{item[3]} | {item[2]} | Instant Sold | {item[0]} {item[1]}"
+        date = item[0]
+        day = item[1]
+        price_element = item[2]
+        name = item[3]
+        trade_type = item[4]
+
+        formatted_item = f"{name} | {price_element} | {trade_type} | {date} {day}"
         formatted_data.append(formatted_item)
     return formatted_data
+
+
+
 
 def plot_combined_chart(prices, search_input, item_name, time_code):
     chart_data = [float(price.replace(',', '').replace(' GP', '')) for price in prices]
@@ -79,6 +99,7 @@ def plot_combined_chart(prices, search_input, item_name, time_code):
     plt.savefig(chart_path)
 
     return chart_path
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
