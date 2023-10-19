@@ -40,9 +40,9 @@ Replace `<item>` with the RS3 item you want to search for.
 ### Example Usage
 
 ```bash
-python ely.py golden+partyhat
+python ely.py red+partyhat
 ```
-This will retrieve the prices for a Golden Partyhat from the Ely website.
+This will retrieve the prices for a Red Partyhat from the Ely website.
 
 ![Example1 - Red Partyhat query](https://i.imgur.com/UFLxfUY.png)
 ![Example2 - Red Partyhat query, with historic chart image generated](https://i.imgur.com/PbtMJWg.png)
