@@ -56,9 +56,6 @@ def scrape_wallet_data(search_item):
     else:
         return None
 
-
-
-
 def format_data(data, search_item, brief):
     formatted_data = []
     if brief:
@@ -75,15 +72,6 @@ def format_data(data, search_item, brief):
         formatted_data.append(formatted_item)
     return formatted_data
 
-def format_ticks(value, pos):
-    if value >= 1e12:
-        return f'{value/1e12:.0f}T'
-    elif value >= 1e9:
-        return f'{value/1e9:.0f}B'
-    elif value >= 1e6:
-        return f'{value/1e6:.0f}M'
-    else:
-        return f'{value:.0f}'
 def plot_combined_chart(prices, search_input, item_name, time_code, dates):
     chart_data = [float(price.replace(',', '').replace(' GP', '')) for price in prices]
 
@@ -139,37 +127,37 @@ def plot_combined_chart(prices, search_input, item_name, time_code, dates):
 
     return chart_path
 
-
-
-
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
-    parser.add_argument('item', type=str, help='The item to search for')
-    parser.add_argument('-b', '--brief', action='store_true', help='Display only the latest 10 prices')
-    parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
-    parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
-
-    args = parser.parse_args()
-    search_input = args.item.replace(' ', '+')
-    
+def process_item(item):
+    search_input = item.replace(' ', '+')
     wallet_data = scrape_wallet_data(search_input)
 
     if wallet_data:
         formatted_data = format_data(wallet_data, search_input, args.brief)
         if args.chart:
             prices = [item.split('|')[1].strip() for item in formatted_data]
-            dates = [item.split('|')[3].strip() for item in formatted_data][::-1]  # Reverse the dates list
+            dates = [item.split('|')[3].strip() for item in formatted_data][::-1]
             item_name = formatted_data[0].split('|')[0].strip()
             now = datetime.now()
             time_code = now.strftime("%H%M%S")
             chart_name = plot_combined_chart(prices, search_input, item_name, time_code, dates)
             print(f"Chart for {item_name} saved as '{chart_name}'")
             if args.popup:
-                webbrowser.open(chart_name)  # Open chart if -p flag is provided
+                webbrowser.open(chart_name)
 
         for data in formatted_data:
             print(data)
     else:
-        print("Error fetching data.")
+        print(f"Error fetching data for {item}.")
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
+    parser.add_argument('items', type=str, nargs='+', help='The items to search for')
+    parser.add_argument('-b', '--brief', action='store_true', help='Display only the latest 10 prices')
+    parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
+    parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
+
+    args = parser.parse_args()
+
+    for item in args.items:
+        process_item(item)
+        time.sleep(1)  # Adjust the delay as needed (in seconds)
