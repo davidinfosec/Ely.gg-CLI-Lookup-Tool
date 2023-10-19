@@ -4,9 +4,9 @@ import csv
 from datetime import datetime
 import argparse
 import time
-from asciichartpy import plot
 import matplotlib.pyplot as plt
 import webbrowser
+import os
 
 def scrape_wallet_data(search_item):
     url = f"https://www.ely.gg/search?search_item={search_item}"
@@ -42,28 +42,43 @@ def format_data(data, search_item, brief):
     if brief:
         data = data[:10]  # Display only the latest 10 prices
     for item in data:
-        formatted_item = f"{item[3]} Price | {item[2]} | Instant Sold | {item[0]} {item[1]}"
+        formatted_item = f"{item[3]} | {item[2]} | Instant Sold | {item[0]} {item[1]}"
         formatted_data.append(formatted_item)
     return formatted_data
 
-def plot_chart(prices, search_input):
+def plot_combined_chart(prices, search_input, item_name, time_code):
     chart_data = [float(price.replace(',', '').replace(' GP', '')) for price in prices]
-
-    # Create the chart
-    plt.plot(chart_data)
 
     # Generate chart name based on search term, current time, and date
     now = datetime.now()
-    time_code = now.strftime("%H%M")
+    month_year = now.strftime("%m-%Y")
     date_code = now.strftime("%m-%d-%Y")
     chart_name = f"chart_{search_input}_{time_code}_{date_code}.png"
 
-    # Save the chart as an image file
-    plt.savefig(chart_name)
+    # Create charts folder if it doesn't exist
+    if not os.path.exists('charts'):
+        os.makedirs('charts')
 
-    if args.popup:
-        # Open the chart in a web browser
-        webbrowser.open(chart_name)
+    # Create subfolder for the current month if it doesn't exist
+    if not os.path.exists(os.path.join('charts', month_year)):
+        os.makedirs(os.path.join('charts', month_year))
+
+    # Create sub-subfolder for each item within MM-YYYY
+    item_folder = os.path.join('charts', month_year, item_name)
+    if not os.path.exists(item_folder):
+        os.makedirs(item_folder)
+
+    # Create the chart using matplotlib
+    plt.plot(chart_data)
+    plt.title(f"{item_name.replace('+', ' ')} Price Chart")
+    plt.xlabel("Data Point")
+    plt.ylabel("Price (in GP)")
+    chart_path = os.path.join(item_folder, chart_name)
+
+    # Save the chart as an image file
+    plt.savefig(chart_path)
+
+    return chart_path
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
@@ -81,8 +96,13 @@ if __name__ == '__main__':
         formatted_data = format_data(wallet_data, search_input, args.brief)
         if args.chart:
             prices = [item.split('|')[1].strip() for item in formatted_data]
-            chart_name = plot_chart(prices, search_input)
-            print(f"Chart saved as '{chart_name}'")
+            item_name = formatted_data[0].split('|')[0].strip()  # Get the item name from the first entry
+            now = datetime.now()
+            time_code = now.strftime("%H%M%S")
+            chart_name = plot_combined_chart(prices, search_input, item_name, time_code)
+            print(f"Chart for {item_name} saved as '{chart_name}'")
+            if args.popup:
+                webbrowser.open(chart_name)  # Open chart if -p flag is provided
         for data in formatted_data:
             print(data)
     else:
