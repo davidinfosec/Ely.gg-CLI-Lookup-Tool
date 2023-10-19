@@ -52,6 +52,10 @@ This will retrieve the prices for a Red Partyhat from the Ely website.
 
 
 
+https://github.com/davidinfosec/Ely.gg-CLI-Lookup-Tool/assets/87215831/1b6de834-3ff2-4f70-8d9c-6fc2cbd1fe19
+
+
+
 
 
 ### Support and Contributions
