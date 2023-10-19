@@ -1,5 +1,3 @@
-## Created by DavidInfosec
-
 import requests
 from bs4 import BeautifulSoup
 import csv
@@ -8,6 +6,7 @@ import argparse
 import time
 from asciichartpy import plot
 import matplotlib.pyplot as plt
+import webbrowser
 
 def scrape_wallet_data(search_item):
     url = f"https://www.ely.gg/search?search_item={search_item}"
@@ -61,13 +60,17 @@ def plot_chart(prices, search_input):
 
     # Save the chart as an image file
     plt.savefig(chart_name)
-    return chart_name
+
+    if args.popup:
+        # Open the chart in a web browser
+        webbrowser.open(chart_name)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
     parser.add_argument('item', type=str, help='The item to search for')
     parser.add_argument('-b', '--brief', action='store_true', help='Display only the latest 10 prices')
     parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
+    parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
 
     args = parser.parse_args()
     search_input = args.item.replace(' ', '+')
