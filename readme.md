@@ -45,7 +45,8 @@ python ely.py red+partyhat
 ```
 This will retrieve the prices for a Red Partyhat from the Ely website.
 
-![Example1 - Red Partyhat query](https://i.imgur.com/UFLxfUY.png(https://i.imgur.com/AaGhfUI.png)
+![Example - Red Partyhat query](https://i.imgur.com/AaGhfUI.png)
+
 
 
 
