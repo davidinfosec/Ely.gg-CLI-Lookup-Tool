@@ -53,3 +53,5 @@ If you encounter any issues or have suggestions for improvements, feel free to o
 This tool is for educational and informational purposes only. Use it responsibly and in compliance with the terms of service of the Ely website.
 
 Disclaimer: This tool is not affiliated with or endorsed by RuneScape, Ely, or any related entities. Use at your own risk.
+
+Feel like this has been useful? Donate toward my latest projects. https://www.poof.io/tip/@davidinfosec
