@@ -8,8 +8,12 @@ import matplotlib.pyplot as plt
 import webbrowser
 import os
 
-def scrape_wallet_data(search_item):
-    url = f"https://www.ely.gg/search?search_item={search_item}"
+def scrape_wallet_data(search_item, use_alternate_url=False):
+    if use_alternate_url:
+        url = f"https://www.ely.gg/view_item/{search_item}"
+    else:
+        url = f"https://www.ely.gg/search?search_item={search_item}"
+
     response = requests.get(url)
 
     if response.status_code == 200:
@@ -18,8 +22,8 @@ def scrape_wallet_data(search_item):
 
         aside_elements = soup.find_all('aside', class_='aside')
 
-        now = datetime.now()
-        current_year = now.year
+        current_month = datetime.now().month
+        current_year = datetime.now().year
 
         for aside_element in aside_elements:
             date_element = aside_element.find('div', class_='center-recent').find('h4')
@@ -39,22 +43,92 @@ def scrape_wallet_data(search_item):
                 else:
                     trade_type = "Unknown"
 
-                date_parts = date_text.split('-')
-                month = datetime.strptime(date_parts[0], '%B').month
-                if month > now.month:
-                    approx_year = current_year - 1
-                else:
-                    approx_year = current_year
+                date_parts = date_text.split(' ')
+                month_name = date_parts[0]
+                month = datetime.strptime(month_name, "%B").month
 
-                wallet_data.append([date_text, day, price, name, trade_type, approx_year])
+                if current_month == 1 and month == 12:  # Only change year if transitioning from December to January
+                    current_year -= 1
 
-        # Sort wallet_data based on date in descending order (newest at the top)
-        wallet_data.sort(key=lambda x: (x[5], x[0]), reverse=True)
+                current_month = month
+
+                year = current_year
+
+                wallet_data.append([date_text, day, price, name, trade_type, year])
 
         return wallet_data
 
     else:
         return None
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def scrape_month_data(search_item, use_alternate_url=False):
+    if use_alternate_url:
+        url = f"https://www.ely.gg/view_item/{search_item}"
+    else:
+        url = f"https://www.ely.gg/search?search_item={search_item}"
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        month_data = {}
+
+        aside_elements = soup.find_all('aside', class_='aside')
+
+        for aside_element in aside_elements:
+            month_element = aside_element.find('div', class_='center-recent').find_all('h4')[0]
+            day_element = aside_element.find('div', class_='center-recent').find_all('p')[0]
+
+            if month_element and day_element:
+                month = month_element.text.strip()
+                day = int(day_element.text.strip())
+
+                if month in month_data:
+                    month_data[month].append(day)
+                else:
+                    month_data[month] = [day]
+
+        return month_data
+
+    else:
+        return None
+
+
+def get_previous_year(month_data):
+    current_month = datetime.now().strftime('%B')
+    current_day = datetime.now().day
+
+    months = [
+        'January', 'February', 'March', 'April', 'May', 'June', 'July',
+        'August', 'September', 'October', 'November', 'December'
+    ]
+
+    for month in reversed(months):
+        if month in month_data and current_month in month_data:
+            if month_data[month][-1] < month_data[current_month][-1]:
+                return datetime.now().year - 1
+
+        if month == current_month and current_day in month_data.get(month, []):
+            return datetime.now().year
+
+    return datetime.now().year
+
+
 
 def format_data(data, search_item, brief):
     formatted_data = []
@@ -70,7 +144,9 @@ def format_data(data, search_item, brief):
 
         formatted_item = f"{name} | {price_element} | {trade_type} | {date} {day} {approx_year}"
         formatted_data.append(formatted_item)
-    return formatted_data
+    return formatted_data[::-1]  # Reverse the list
+
+
 
 def plot_combined_chart(prices, search_input, item_name, time_code, dates):
     chart_data = [float(price.replace(',', '').replace(' GP', '')) for price in prices]
@@ -88,9 +164,6 @@ def plot_combined_chart(prices, search_input, item_name, time_code, dates):
     item_folder = os.path.join('charts', date_code, item_name[4:].replace('price', '').strip())
     if not os.path.exists(item_folder):
         os.makedirs(item_folder)
-
-    # Reverse the order of chart_data
-    chart_data.reverse()
 
     plt.figure(figsize=(10, 5))  # Adjust figure size
     plt.rcParams.update({'font.size': 8})  # Adjust font size
@@ -117,7 +190,7 @@ def plot_combined_chart(prices, search_input, item_name, time_code, dates):
             plt.text(i, -0.15, month_year, ha='center', transform=plt.gca().transData, rotation=45)  # Rotate labels
 
     # Set x-axis ticks and labels
-    plt.xticks(range(len(prices)), dates, rotation=45, ha='right')
+    plt.xticks(range(len(prices)), dates[::-1], rotation=45, ha='right')  # Reverse dates
     plt.gca().xaxis.set_major_locator(plt.MaxNLocator(10))  # Set a fixed number of ticks
 
     chart_path = os.path.join(item_folder, chart_name)
@@ -127,9 +200,13 @@ def plot_combined_chart(prices, search_input, item_name, time_code, dates):
 
     return chart_path
 
-def process_item(item):
+
+
+
+
+def process_item(item, use_alternate_url):
     search_input = item.replace(' ', '+')
-    wallet_data = scrape_wallet_data(search_input)
+    wallet_data = scrape_wallet_data(search_input, use_alternate_url)
 
     if wallet_data:
         formatted_data = format_data(wallet_data, search_input, args.brief)
@@ -144,20 +221,31 @@ def process_item(item):
             if args.popup:
                 webbrowser.open(chart_name)
 
+        formatted_data.reverse()  # Reverse the list for CLI output
+
         for data in formatted_data:
             print(data)
     else:
         print(f"Error fetching data for {item}.")
 
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
-    parser.add_argument('items', type=str, nargs='+', help='The items to search for')
+    parser.add_argument('-id', '--itemid', type=int, help='Specify the item ID')
     parser.add_argument('-b', '--brief', action='store_true', help='Display only the latest 10 prices')
     parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
     parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
+    parser.add_argument('items', type=str, nargs='*', help='The items to search for')
 
     args = parser.parse_args()
 
-    for item in args.items:
-        process_item(item)
-        time.sleep(1)  # Adjust the delay as needed (in seconds)
+    if args.itemid:
+        process_item(str(args.itemid), True)
+    elif args.items:
+        for item in args.items:
+            process_item(item, False)
+            time.sleep(1)  # Adjust the delay as needed (in seconds)
+    else:
+        print("Please provide either an item ID or item name(s).")
