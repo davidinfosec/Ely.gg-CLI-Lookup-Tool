@@ -29,23 +29,21 @@ The RS3 Item Price Scraper is a command-line tool. It accepts the following argu
 - `-b`, `--brief`: Display only the latest 10 prices (optional).
 - `-c`, `--chart`: Generate a .png file displaying a small chart to accompany your search.
 - `-p`, `--popup`: Opens the generated .png file immediately after being generated.
+- `-id`, `--itemid`: Provide item id as substition for an item name, (80 for Santa Hat, as an example)
 
 To execute the tool, run the following command in your terminal:
 
 ```bash
-python ely.py <item> [-b]
+python ely.py
 ```
-
-Replace `<item>` with the RS3 item you want to search for.
 
 ### Example Usage
 
 ```bash
-python ely.py red+partyhat
+python ely.py
 ```
-This will retrieve the prices for a Red Partyhat from the Ely website.
 
-![Example - Red Partyhat query](https://i.imgur.com/OOyRNqi.png)
+https://github.com/davidinfosec/Ely.gg-CLI-Lookup-Tool/assets/87215831/8dc18b7d-84c1-48a1-a8ce-4b78a9236cda
 ![Example - Red Partyhat longterm chart](https://i.imgur.com/oWwmpou.png)
 ![Example - Red Partyhat brief chart](https://i.imgur.com/VS5EzIu.png)
 
@@ -54,7 +52,11 @@ This will retrieve the prices for a Red Partyhat from the Ely website.
 
 
 
-https://github.com/davidinfosec/Ely.gg-CLI-Lookup-Tool/assets/87215831/9b143df0-fabb-475b-9946-b740649fefe0
+
+
+
+
+
 
 
 
