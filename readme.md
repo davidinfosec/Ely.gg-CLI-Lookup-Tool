@@ -25,11 +25,13 @@ pip install -r requirements.txt
 
 The RS3 Item Price Scraper is a command-line tool. It accepts the following arguments:
 
-- `item`: The RS3 item to search for.
+- `-h`, `--help`: Show help menu.
 - `-b`, `--brief`: Display only the latest 10 prices (optional).
+  - `set_brief <#>`: Set the default number of prices that will display with the --brief command.
 - `-c`, `--chart`: Generate a .png file displaying a small chart to accompany your search.
 - `-p`, `--popup`: Opens the generated .png file immediately after being generated.
 - `-id`, `--itemid`: Provide item id as substition for an item name, (80 for Santa Hat, as an example)
+- `item`: The RS3 item to search for.
 
 To execute the tool, run the following command in your terminal:
 
