@@ -7,6 +7,7 @@ import time
 import matplotlib.pyplot as plt
 import webbrowser
 import os
+import pytz
 
 def scrape_wallet_data(search_item, use_alternate_url=False):
     if use_alternate_url:
@@ -223,29 +224,48 @@ def process_item(item, use_alternate_url):
 
         formatted_data.reverse()  # Reverse the list for CLI output
 
+        # Add timestamp
+        est = pytz.timezone('US/Eastern')
+        now_est = datetime.now(est)
+        timestamp = now_est.strftime("%m-%d-%Y at %I:%M %p EST")
+        print(f"Search results for {timestamp}")
+
         for data in formatted_data:
             print(data)
     else:
         print(f"Error fetching data for {item}.")
 
 
-
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
-    parser.add_argument('-id', '--itemid', type=int, help='Specify the item ID')
-    parser.add_argument('-b', '--brief', action='store_true', help='Display only the latest 10 prices')
-    parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
-    parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
-    parser.add_argument('items', type=str, nargs='*', help='The items to search for')
+    while True:
+        try:
+            args = input('Enter search query for Ely.gg and optional flags: (--brief, --chart, --popup, --itemid, or "quit" to exit; cls to clear): ')
+            if args == 'quit':
+                break
+            elif args == 'cls':
+                clear_screen()
+            else:
+                args = args.split()
+                parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
+                parser.add_argument('-id', '--itemid', type=int, help='Specify the item ID')
+                parser.add_argument('-b', '--brief', action='store_true', help='Display only the latest 10 prices')
+                parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
+                parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
+                parser.add_argument('items', type=str, nargs='*', help='The items to search for')
+                args = parser.parse_args(args)
 
-    args = parser.parse_args()
+                if args.itemid:
+                    process_item(str(args.itemid), True)
+                elif args.items:
+                    for item in args.items:
+                        process_item(item, False)
+                        time.sleep(1)  # Adjust the delay as needed (in seconds)
+                else:
+                    print("Please provide either an item ID or item name(s).")
+        except Exception as e:
+            print(f"Error: {e}")
 
-    if args.itemid:
-        process_item(str(args.itemid), True)
-    elif args.items:
-        for item in args.items:
-            process_item(item, False)
-            time.sleep(1)  # Adjust the delay as needed (in seconds)
-    else:
-        print("Please provide either an item ID or item name(s).")
+    print("Exiting program...")
