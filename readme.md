@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 ### Running the Tool
 
-The RS3 Item Price Scraper is a command-line tool. It accepts the following arguments:
+The Unofficial Ely.gg CLI Lookup is a command-line tool. It accepts the following arguments:
 
 - `-h`, `--help`: Show help menu.
 - `-b`, `--brief`: Display only the latest 10 prices (optional).
