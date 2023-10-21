@@ -9,6 +9,9 @@ import webbrowser
 import os
 import pytz
 
+brief_count = 10  # Default brief count
+brief_enabled = False
+
 def scrape_wallet_data(search_item, use_alternate_url=False):
     if use_alternate_url:
         url = f"https://www.ely.gg/view_item/{search_item}"
@@ -131,22 +134,6 @@ def get_previous_year(month_data):
 
 
 
-def format_data(data, search_item, brief):
-    formatted_data = []
-    if brief:
-        data = data[:10]  # Display only the latest 10 prices
-    for item in data:
-        date = item[0]
-        day = item[1]
-        price_element = item[2]
-        name = item[3]
-        trade_type = item[4]
-        approx_year = item[5]
-
-        formatted_item = f"{name} | {price_element} | {trade_type} | {date} {day} {approx_year}"
-        formatted_data.append(formatted_item)
-    return formatted_data[::-1]  # Reverse the list
-
 
 
 def plot_combined_chart(prices, search_input, item_name, time_code, dates):
@@ -207,10 +194,16 @@ def plot_combined_chart(prices, search_input, item_name, time_code, dates):
 
 def process_item(item, use_alternate_url):
     search_input = item.replace(' ', '+')
+    print("\n" * 20)
+    print("=" * 40 + "\n")
+    print(f"Search results for Ely.gg | {datetime.now().strftime('%m-%d-%Y at %I:%M %p EST')}\n")
+    print("=" * 40 + "\n")  # Add clear spacing between timestamp and entries
+
     wallet_data = scrape_wallet_data(search_input, use_alternate_url)
 
     if wallet_data:
-        formatted_data = format_data(wallet_data, search_input, args.brief)
+        formatted_data = format_data(wallet_data)
+
         if args.chart:
             prices = [item.split('|')[1].strip() for item in formatted_data]
             dates = [item.split('|')[3].strip() for item in formatted_data][::-1]
@@ -222,40 +215,116 @@ def process_item(item, use_alternate_url):
             if args.popup:
                 webbrowser.open(chart_name)
 
-        formatted_data.reverse()  # Reverse the list for CLI output
+        for i in range(len(formatted_data) - 1, -1, -1):  # Start from the end and go towards the beginning
+            print(formatted_data[i])
 
-        # Add timestamp
         est = pytz.timezone('US/Eastern')
         now_est = datetime.now(est)
         timestamp = now_est.strftime("%m-%d-%Y at %I:%M %p EST")
-        print(f"Search results for {timestamp}")
-
-        for data in formatted_data:
-            print(data)
+        print()
     else:
         print(f"Error fetching data for {item}.")
+
+
+
 
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+
+
+def display_help():
+    global brief_count, brief_enabled  # Access the global brief_count variable
+    print(f"""
+    
+    
+
+d sss   d      Ss   sS        sSSSs     sSSSs          sSSs. d      d 
+S       S        S S         S     S   S     S        S      S      S 
+S       S         S         S         S              S       S      S 
+S sSSs  S         S         S         S              S       S      S 
+S       S         S    .ss  S    ssSb S    ssSb      S       S      S 
+S       S         S    SSSz  S     S   S     S        S      S      S 
+P sSSss P sSSs    P    'ZZ'   "sss"     "sss"          "sss' P sSSs P 
+                                                                      
+
+
+    
+    Usage: python script_name.py [options] [items]
+
+    Options:
+        -h, --help        Show this help message and exit
+        -id, --itemid     Specify the item ID
+        -b, --brief       Use this option to limit the number of displayed entries. Display only the latest n prices (current: {brief_count})
+        set_brief <#>     Set the default number of prices that will display with the --brief command.
+        -c, --chart       Display a line chart of prices (exported to a .png of an 'item name' directory within the generated 'charts' directory)
+        -p, --popup       Open the chart image in a popup
+        items             The items to search for
+
+    Example:
+        Blue+Party+Hat item1 item2 --id 80 --chart --popup
+    """)
+    
+
+def format_data(data):
+    global brief_enabled, brief_count  # Access the global brief_enabled and brief_count variables
+    formatted_data = []
+
+    for item in data:
+        date = item[0]
+        day = item[1]
+        price_element = item[2]
+        name = item[3]
+        trade_type = item[4]
+        approx_year = item[5]
+
+        formatted_item = f"{name} | {price_element} | {trade_type} | {date} {day} {approx_year}"
+        formatted_data.append(formatted_item)
+
+    if brief_enabled:
+        if brief_enabled and brief_count < len(formatted_data):
+            brief_data = formatted_data[:brief_count][::-1]  # Display only the oldest 'brief_count' prices in brief mode
+        else:
+            brief_data = formatted_data[::-1]  # Display all data in brief mode
+        return brief_data
+
+    return formatted_data[::-1]  # Display all data in CLI output
+
+
+
+
+
+
+
+    
+    
 if __name__ == '__main__':
+    display_help()  # Display the help menu at the start
+
     while True:
         try:
-            args = input('Enter search query for Ely.gg and optional flags: (--brief, --chart, --popup, --itemid, or "quit" to exit; cls to clear): ')
-            if args == 'quit':
+            args = input('Enter search query for Ely.gg and optional flags (type "help" for help): ')
+            if args == 'quit' or args == 'exit':
                 break
             elif args == 'cls':
                 clear_screen()
+            elif args == 'help':
+                display_help()
             else:
                 args = args.split()
                 parser = argparse.ArgumentParser(description='Retrieve RS3 item prices from Ely.')
                 parser.add_argument('-id', '--itemid', type=int, help='Specify the item ID')
-                parser.add_argument('-b', '--brief', action='store_true', help='Display only the latest 10 prices')
+                parser.add_argument('-b', '--brief', action='store_true', help=f'Use this option to limit the number of displayed entries (current: {brief_count})')
                 parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
                 parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
                 parser.add_argument('items', type=str, nargs='*', help='The items to search for')
                 args = parser.parse_args(args)
+
+                if args.brief:
+                    brief_enabled = True
+                else:
+                    brief_enabled = False
 
                 if args.itemid:
                     process_item(str(args.itemid), True)
