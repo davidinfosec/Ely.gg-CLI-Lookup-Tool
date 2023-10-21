@@ -44,6 +44,7 @@ python ely.py
 ```
 
 https://github.com/davidinfosec/Ely.gg-CLI-Lookup-Tool/assets/87215831/8dc18b7d-84c1-48a1-a8ce-4b78a9236cda
+
 ![Example - Red Partyhat longterm chart](https://i.imgur.com/oWwmpou.png)
 ![Example - Red Partyhat brief chart](https://i.imgur.com/VS5EzIu.png)
 
