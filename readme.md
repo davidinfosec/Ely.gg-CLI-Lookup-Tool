@@ -33,12 +33,6 @@ The RS3 Item Price Scraper is a command-line tool. It accepts the following argu
 - `-id`, `--itemid`: Provide item id as substition for an item name, (80 for Santa Hat, as an example)
 - `item`: The RS3 item to search for.
 
-To execute the tool, run the following command in your terminal:
-
-```bash
-python ely.py
-```
-
 ### Example Usage
 
 ```bash
