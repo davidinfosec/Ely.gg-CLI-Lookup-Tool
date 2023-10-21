@@ -38,8 +38,9 @@ The RS3 Item Price Scraper is a command-line tool. It accepts the following argu
 ```bash
 python ely.py
 ```
+![Ely.gg CLI program](https://i.imgur.com/ZlJP8ZR.png)
 
-https://github.com/davidinfosec/Ely.gg-CLI-Lookup-Tool/assets/87215831/8dc18b7d-84c1-48a1-a8ce-4b78a9236cda
+https://github.com/davidinfosec/Ely.gg-CLI-Lookup-Tool/assets/87215831/3abf7c60-11ea-4530-a6db-a0bcaf418ea0
 
 ![Example - Red Partyhat longterm chart](https://i.imgur.com/oWwmpou.png)
 ![Example - Red Partyhat brief chart](https://i.imgur.com/VS5EzIu.png)
