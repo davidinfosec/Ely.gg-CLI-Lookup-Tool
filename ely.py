@@ -199,31 +199,52 @@ def process_item(item, use_alternate_url):
     print(f"Search results for Ely.gg | {datetime.now().strftime('%m-%d-%Y at %I:%M %p EST')}\n")
     print("=" * 40 + "\n")  # Add clear spacing between timestamp and entries
 
-    wallet_data = scrape_wallet_data(search_input, use_alternate_url)
+    if use_alternate_url:
+        url = f"https://www.ely.gg/view_item/{item}"
+    else:
+        url = f"https://www.ely.gg/search?search_item={search_input}"
 
-    if wallet_data:
-        formatted_data = format_data(wallet_data)
+    response = requests.get(url)
 
-        if args.chart:
-            prices = [item.split('|')[1].strip() for item in formatted_data]
-            dates = [item.split('|')[3].strip() for item in formatted_data][::-1]
-            item_name = formatted_data[0].split('|')[0].strip()
-            now = datetime.now()
-            time_code = now.strftime("%H%M%S")
-            chart_name = plot_combined_chart(prices, search_input, item_name, time_code, dates)
-            print(f"Chart for {item_name} saved as '{chart_name}'")
-            if args.popup:
-                webbrowser.open(chart_name)
+    if response.status_code == 200:
+        if args.recent:  # Check if the --recent flag is provided
+            recent_data = scrape_recent_data()
 
-        for i in range(len(formatted_data) - 1, -1, -1):  # Start from the end and go towards the beginning
-            print(formatted_data[i])
+            if recent_data:
+                for item_info in recent_data:
+                    item_name, price, timeframe = item_info
+                    print(f"Item: {item_name}, Price: {price}, Timeframe: {timeframe}")
+            else:
+                print("Error fetching recent data.")
+        else:
+            wallet_data = scrape_wallet_data(search_input, use_alternate_url)
 
-        est = pytz.timezone('US/Eastern')
-        now_est = datetime.now(est)
-        timestamp = now_est.strftime("%m-%d-%Y at %I:%M %p EST")
-        print()
+            if wallet_data:
+                formatted_data = format_data(wallet_data)
+
+                if args.chart:
+                    prices = [item.split('|')[1].strip() for item in formatted_data]
+                    dates = [item.split('|')[3].strip() for item in formatted_data][::-1]
+                    item_name = formatted_data[0].split('|')[0].strip()
+                    now = datetime.now()
+                    time_code = now.strftime("%H%M%S")
+                    chart_name = plot_combined_chart(prices, search_input, item_name, time_code, dates)
+                    print(f"Chart for {item_name} saved as '{chart_name}'")
+                    if args.popup:
+                        webbrowser.open(chart_name)
+
+                for i in range(len(formatted_data) - 1, -1, -1):  # Start from the end and go towards the beginning
+                    print(formatted_data[i])
+
+                est = pytz.timezone('US/Eastern')
+                now_est = datetime.now(est)
+                timestamp = now_est.strftime("%m-%d-%Y at %I:%M %p EST")
+                print()
+            else:
+                print(f"Error fetching data for {item}.")
     else:
         print(f"Error fetching data for {item}.")
+
 
 
 
@@ -260,6 +281,7 @@ P sSSss P sSSs    P    'ZZ'   "sss"     "sss"          "sss' P sSSs P
         set_brief <#>     Set the default number of prices that will display with the --brief command.
         -c, --chart       Display a line chart of prices (exported to a .png of an 'item name' directory within the generated 'charts' directory)
         -p, --popup       Open the chart image in a popup
+        --recent          Scrape recent trade data
         items             The items to search for
 
     Example:
@@ -292,6 +314,50 @@ def format_data(data):
     return formatted_data[::-1]  # Display all data in CLI output
 
 
+import re
+
+def scrape_recent_data():
+    url = "https://www.ely.gg/recent_trades"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        recent_data = []
+
+        walet_bodies = soup.find_all('div', class_='waletBody')
+
+        for walet_body in walet_bodies:
+            item_name = walet_body.find('span', class_='fontsmall').text.strip()
+            price = walet_body.find('p', style='font-weight: 400; font-size: 16px;color: white;').text.strip()
+            timeframe = walet_body.find('p', style='color: rgba(255, 255, 255); font-size: 14px;font-weight: 400;').text.strip()
+
+            if 'm ago' in timeframe:
+                minutes_ago = int(re.search(r'\d+', timeframe).group())
+                if minutes_ago >= 60:
+                    hours_ago = minutes_ago // 60
+                    minutes_ago %= 60
+                    if minutes_ago > 0:
+                        timeframe = f"{hours_ago}h {minutes_ago}m ago"
+                    else:
+                        timeframe = f"{hours_ago}h ago"
+                else:
+                    timeframe = f"{minutes_ago}m ago"
+            elif 'h ago' in timeframe:
+                hours_ago = int(re.search(r'\d+', timeframe).group())
+                timeframe = f"{hours_ago}h ago"
+
+            recent_data.append([item_name, price, timeframe])
+        return recent_data
+    else:
+        return None
+
+
+
+
+
+
+
+
 
 
 
@@ -318,6 +384,7 @@ if __name__ == '__main__':
                 parser.add_argument('-b', '--brief', action='store_true', help=f'Use this option to limit the number of displayed entries (current: {brief_count})')
                 parser.add_argument('-c', '--chart', action='store_true', help='Display a line chart of prices')
                 parser.add_argument('-p', '--popup', action='store_true', help='Open the chart image in a popup')
+                parser.add_argument('--recent', action='store_true', help='Scrape recent trade data')  # Add this line
                 parser.add_argument('items', type=str, nargs='*', help='The items to search for')
                 args = parser.parse_args(args)
 
@@ -326,9 +393,28 @@ if __name__ == '__main__':
                 else:
                     brief_enabled = False
 
-                if args.itemid:
+                if args.recent:
+                    recent_data = scrape_recent_data()
+
+                    if recent_data:
+                        print("\n" * 20)
+                        print("=" * 40 + "\n")
+                        print(f"Recent entries for Ely.gg | Scrape for {datetime.now().strftime('%m-%d-%Y at %I:%M %p EST')}\n")
+                        print("=" * 40 + "\n")
+
+                        for item_info in recent_data:
+                            item_name, price, timeframe = item_info
+                            print(f"Item: {item_name}, Price: {price}, Timeframe: {timeframe}")
+                    else:
+                        print("Error fetching recent data.")
+                elif args.itemid:
                     process_item(str(args.itemid), True)
                 elif args.items:
+                    print("\n" * 20)
+                    print("=" * 40 + "\n")
+                    print(f"Search results for Ely.gg | {datetime.now().strftime('%m-%d-%Y at %I:%M %p EST')}\n")
+                    print("=" * 40 + "\n")  # Add clear spacing between timestamp and entries
+
                     for item in args.items:
                         process_item(item, False)
                         time.sleep(1)  # Adjust the delay as needed (in seconds)
@@ -338,3 +424,5 @@ if __name__ == '__main__':
             print(f"Error: {e}")
 
     print("Exiting program...")
+
+
