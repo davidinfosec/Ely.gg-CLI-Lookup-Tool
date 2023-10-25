@@ -31,6 +31,7 @@ The Unofficial Ely.gg CLI Lookup is a command-line tool. It accepts the followin
 - `-c`, `--chart`: Generate a .png file displaying a small chart to accompany your search.
 - `-p`, `--popup`: Opens the generated .png file immediately after being generated.
 - `-id`, `--itemid`: Provide item id as substition for an item name, (80 for Santa Hat, as an example)
+- `--recent`, Scrape recent trade data (https://www.ely.gg/recent_trades)
 - `item`: The RS3 item to search for.
 
 ### Example Usage
