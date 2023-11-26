@@ -66,10 +66,12 @@ https://github.com/davidinfosec/Ely.gg-CLI-Lookup-Tool/assets/87215831/3abf7c60-
 
 If you encounter any issues or have suggestions for improvements, feel free to open an issue or submit a pull request. Your contributions are highly appreciated.
 
+Feel like this has been useful? Donate toward my latest projects. https://www.poof.io/tip/@davidinfosec
+
+
 #### Disclaimer
 
 This tool is for educational and informational purposes only. Use it responsibly and in compliance with the terms of service of the Ely website.
 
 Disclaimer: This tool is not affiliated with or endorsed by RuneScape, Ely, or any related entities. Use at your own risk.
 
-Feel like this has been useful? Donate toward my latest projects. https://www.poof.io/tip/@davidinfosec
